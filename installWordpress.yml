@@ -1,0 +1,60 @@
+---
+ - hosts: web1
+   become: true
+   tasks:
+    - name: Update machine
+      command: apt update
+
+    - name: Install packages
+      package: name={{ item }} state=latest
+      with-item:
+       - apache2
+       - mysql-server
+       - mysql-client
+       - php
+       - libapache2-mod-php
+       - php-mcrypt php-mysql
+       - unzip
+
+    - name: set user
+      command: mysqladmin -u root password rootpassword
+
+    - name: get mysqlcommands
+      command: wget https://gitlab.com/roybhaskar9/devops/raw/master/coding/chef/chefwordpress/files/default/mysqlcommands
+      args:
+        chdir: /tmp/mysqlcommands
+
+    - name: set user mysql
+      command: mysql -uroot -prootpassword < /tmp/mysqlcommands
+
+    - name: get zip file
+      command: wget https://wordpress.org/latest.zip
+      args:
+        chdir: /tmp/latest.zip
+
+    - name: unzip file
+      command: sudo unzip /tmp/latest.zip -d /var/www/html
+
+    - name: get wp-config-sample.php
+      command: wget https://gitlab.com/roybhaskar9/devops/raw/master/coding/chef/chefwordpress/files/default/wp-config-sample.php
+      args:
+        chdir: /var/www/html/wordpress/
+
+    - name: rename config file
+      copy:
+        src: /var/www/html/wordpress/wp-config-sample.php
+        dest: /var/www/html/wordpress/wp-config.php
+
+    - name: set properties
+      file:
+        path: /var/www/html/wordpress
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Start service apache2
+      service:
+        name: apache2
+        state: restarted
