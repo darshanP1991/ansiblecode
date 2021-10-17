@@ -1,54 +1,57 @@
 ---
+ -hosts: web1
+  become: true
+  tasks:
 # tasks file for darshan-wp
- - name: Install packages
-   apt: name={{ item }} state=latest update_cache=yes
-   with_items:
-    - apache2
-    - mysql-server
-    - mysql-client
-    - php
-    - libapache2-mod-php
-    - php-mcrypt
-    - php-mysql
-    - unzip
+   - name: Install packages
+     apt: name={{ item }} state=latest update_cache=yes
+     with_items:
+      - apache2
+      - mysql-server
+      - mysql-client
+      - php
+      - libapache2-mod-php
+      - php-mcrypt
+      - php-mysql
+      - unzip
 
- - name: set user
-   command: mysqladmin -u root password rootpassword
+   - name: set user
+     command: mysqladmin -u root password rootpassword
 
- - name: get mysqlcommands
-   get_url:
-     url: https://gitlab.com/roybhaskar9/devops/raw/master/coding/chef/chefwordpress/files/default/mysqlcommands
-     dest: /tmp/mysqlcommands
+   - name: get mysqlcommands
+     get_url:
+       url: https://gitlab.com/roybhaskar9/devops/raw/master/coding/chef/chefwordpress/files/default/mysqlcommands
+       dest: /tmp/mysqlcommands
 
- - name: set user mysql
-   shell: "mysql -uroot -prootpassword < /tmp/mysqlcommands"
+   - name: set user mysql
+     shell: "mysql -uroot -prootpassword < /tmp/mysqlcommands"
 
- - name: get zip file
-   get_url:
-     url: https://wordpress.org/latest.zip
-     dest: /tmp/latest.zip
+   - name: get zip file
+     get_url:
+       url: https://wordpress.org/latest.zip
+       dest: /tmp/latest.zip
 
- - name: unzip file
-   unarchive:
-     src: /tmp/latest.zip
-     dest: /var/www/html
-     remote_src: yes
+   - name: unzip file
+     unarchive:
+       src: /tmp/latest.zip
+       dest: /var/www/html
+       remote_src: yes
 
- - name: get wp-config-sample.php
-   get_url:
-     url: https://gitlab.com/roybhaskar9/devops/raw/master/coding/chef/chefwordpress/files/default/wp-config-sample.php
-     dest: /var/www/html/wordpress/wp-config.php
+   - name: get wp-config-sample.php
+     get_url:
+       url: https://gitlab.com/roybhaskar9/devops/raw/master/coding/chef/chefwordpress/files/default/wp-config-sample.php
+       dest: /var/www/html/wordpress/wp-config.php
 
- - name: set properties
-   file:
-     path: /var/www/html/wordpress
-     state: directory
-     recurse: yes
-     owner: www-data
-     group: www-data
-     mode: '0755'
+   - name: set properties
+     file:
+       path: /var/www/html/wordpress
+       state: directory
+       recurse: yes
+       owner: www-data
+       group: www-data
+       mode: '0755'
 
- - name: Start service apache2
-   service:
-     name: apache2
-     state: restarted
+   - name: Start service apache2
+     service:
+       name: apache2
+       state: restarted
